@@ -14,10 +14,10 @@ class World():
     self._world_next = self._world_2
 
   def set_world(self, world):
-    pass
+    assert(False)
 
   def neighbourhood(self, cell_coords):
-    pass
+    assert(False)
 
   def set_rules(self, rules):
     self._rules = rules
@@ -27,10 +27,12 @@ class World():
     self._flip_worlds()
     pass
 
+  def _step(self):
+    assert(False)
+
   @property
   def world(self):
-    pass
-    return self._world
+    assert(False)
 
   def _step(self):
     # Override with specific step
@@ -53,16 +55,20 @@ class World1D(World):
 
   def set_world(self, world):
     shape = world.shape
-    if shape != self._dim:
-      raise ValueError('Dim mismatch {} !+ {}'.format(len(shape), self._dim))
+    if shape != (self._dim,):
+      raise ValueError('Dim mismatch {} !+ {}'.format(shape, self._dim))
     self._world[1:world.shape[0] + 1] = world
 
   @property
   def world(self):
-    return self._world[1:self._dim[0] + 1]
+    return self._world[1:self._dim + 1]
 
   def neighbourhood(self, coord):
     return self._world[coord - 1: coord + 2]
+
+  def _step(self):
+    for i in range(1, self._dim + 1):
+      self._world_next[i] = self._rules(self.neighbourhood(i))
 
   def set_state(self, coord):
     pass
@@ -148,7 +154,7 @@ class World3D(World):
 
 class TestWorld(unittest.TestCase):
   def test_neighbours_1D(self):
-    _world = World1D(dim=(4,))
+    _world = World1D(dim=4)
     _world.set_world(np.array([0, 1, 2, 3]))
     neighbours = _world.neighbourhood(2)
     self.assertTrue((neighbours == np.array([0, 1, 2])).all())
