@@ -31,7 +31,7 @@ class World():
     assert(False)
 
   @property
-  def world(self):
+  def cells(self):
     assert(False)
 
   def _step(self):
@@ -60,7 +60,7 @@ class World1D(World):
     self._world[1:world.shape[0] + 1] = world
 
   @property
-  def world(self):
+  def cells(self):
     return self._world[1:self._dim + 1]
 
   def neighbourhood(self, coord):
@@ -70,7 +70,8 @@ class World1D(World):
     for i in range(1, self._dim + 1):
       self._world_next[i] = self._rules(self.neighbourhood(i))
 
-  def set_state(self, coord):
+  def set_cell_state(self, coord, state):
+    self._world[np.array(coord) + 1] = state
     pass
 
 
@@ -90,7 +91,7 @@ class World2D(World):
         ] = world
 
   @property
-  def world(self):
+  def cells(self):
     return self._world[
         1:self._dim[0] + 1,
         1:self._dim[1] + 1]
@@ -131,7 +132,7 @@ class World3D(World):
         ] = world
 
   @property
-  def world(self):
+  def cells(self):
     return self._world[
         1:self._dim[0] + 1,
         1:self._dim[1] + 1,
