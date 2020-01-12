@@ -17,13 +17,15 @@ if __name__ == '__main__':
   rule_set = int(args.get('rule_set'))
   display_size = (640, 480)
 
-  world = World1D(num_cells)
-  centre = int(num_cells/2)
-  world.set_cell_state(centre, 1)
+  world = World1D(num_cells, num_states=3)
+  states = np.random.uniform(size=(num_cells, 3))
+  states[:, 0] = 0
+  states[int(num_cells/2), :] = 1
+  world.set_states(states)
   world.set_rules(rules.CreateBinaryLife1DRule(rule_set))
 
   renderer = Renderer1D(num_cells=num_cells, history_size=history,
-      display_size=display_size)
+      display_size=display_size, state_depth=3)
   renderer.next_gen(world.cells)
   renderer.display()
 

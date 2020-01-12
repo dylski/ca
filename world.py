@@ -21,18 +21,18 @@ class World():
     self._world = self._world_1
     self._world_next = self._world_2
 
-  def set_world(self, world):
-    if ((len(self._state_dim) - len(world.shape) == 1)
+  def set_states(self, states):
+    if ((len(self._state_dim) - len(states.shape) == 1)
         and self._num_states == 1):
       # Add single dim if it is missing and cells only have a single state,
       # e.g. (4,4) -> (4,4,1)
-      world = world[..., np.newaxis]
-    if world.shape != tuple(list(self._dim) + [self._num_states]):
+      states = states[..., np.newaxis]
+    if states.shape != tuple(list(self._dim) + [self._num_states]):
       raise ValueError('Dim mismatch {} !+ {}'.format(
-        world.shape, self._dim + [self._num_states]))
-    self._set_world(world)
+        states.shape, self._dim + [self._num_states]))
+    self._set_states(states)
 
-  def _set_world(self):
+  def _set_states(self):
     assert(False)
 
   def neighbourhood(self, cell_coords):
@@ -63,8 +63,13 @@ class World():
     self._world_next = _world_old
 
   def set_state(self, cell_coords):
-    pass
+    if len(cell_coords) != len(self._dim):
+      raise ValueError('len(cell_coords) {} != len(self._dim) {}'.format(
+        len(cell_coords), len(self._dim)))
+    self._set_state(cell_coords)
 
+  def _set_state(self, cell_coords):
+    assert(False)
 
 class World1D(World):
   '''
@@ -72,7 +77,7 @@ class World1D(World):
   Grid padding of 1 with dead cells.
   '''
 
-  def _set_world(self, world):
+  def _set_states(self, world):
     self._world[1:world.shape[0] + 1] = world
 
   @property
@@ -97,7 +102,7 @@ class World2D(World):
   Grid padding of 1 with dead cells.
   '''
 
-  def _set_world(self, world):
+  def _set_states(self, world):
     self._world[
         1:world.shape[0] + 1,
         1:world.shape[1] + 1,
@@ -125,7 +130,6 @@ class World2D(World):
 
   def set_state(self, cell_coords):
     coords = np.array(cell_coords) + 1
-    pass
 
 
 class World3D(World):
@@ -134,7 +138,7 @@ class World3D(World):
   Grid padding of 1 with dead cells.
   '''
 
-  def _set_world(self, world):
+  def _set_states(self, world):
     self._world[
         1:world.shape[0] + 1,
         1:world.shape[1] + 1,
@@ -158,7 +162,7 @@ class World3D(World):
         coords[2] - 1: coords[2] + 2,
         ]
 
-  def set_state(self, cell_coords):
+  def _set_state(self, cell_coords):
     coords = np.array(cell_coords) + 1
     pass
 
@@ -166,7 +170,7 @@ class World3D(World):
 class TestWorld(unittest.TestCase):
   def test_neighbours_1D(self):
     _world = World1D(dim=4)
-    _world.set_world(np.array([0, 1, 2, 3]))
+    _world.set_states(np.array([0, 1, 2, 3]))
     neighbours = _world.neighbourhood(2)
     self.assertTrue((neighbours == np.array([0, 1, 2])[..., np.newaxis]).all())
     neighbours = _world.neighbourhood(1)
@@ -176,8 +180,8 @@ class TestWorld(unittest.TestCase):
 
   def test_neighbours_2D(self):
     _world = World2D(dim=(4,4))
-    world = np.array(range(16)).reshape((4,4))
-    _world.set_world(world)
+    states = np.array(range(16)).reshape((4,4))
+    _world.set_states(states)
     neighbours = _world.neighbourhood((1, 1))
     self.assertTrue((neighbours == np.array([
       [0, 0, 0],
@@ -199,8 +203,8 @@ class TestWorld(unittest.TestCase):
 
   def test_neighbours_3D(self):
     _world = World3D(dim=(4,4,4))
-    world = np.array(range(4*4*4)).reshape((4,4,4))
-    _world.set_world(world)
+    states = np.array(range(4*4*4)).reshape((4,4,4))
+    _world.set_states(states)
     neighbours = _world.neighbourhood((1, 1, 1))
     self.assertTrue((neighbours == np.array([
       [

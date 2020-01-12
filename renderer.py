@@ -17,7 +17,6 @@ class Renderer():
   def display(self, data):
     # Display stored data
     assert(False)
-    pass
 
 
 class Renderer1D(Renderer):
@@ -41,12 +40,12 @@ class Renderer1D(Renderer):
     self._history = np.zeros(self._state_size)
 
   def next_gen(self, data):
+    # import pdb; pdb.set_trace()
     self._history = np.roll(self._history, 1, axis=1)
     # Indexing with list preserves dimensioality instead of squeezing result
     # e.g. result will be (4,1,3) not squeezed to (4,3)
     # Also insert time dimension into data
     self._history[:, [0]] = np.expand_dims(data, axis=1)
-    # self._history[:, [0]] = data
 
   def display(self):
     self._bitmap = np.zeros((self._num_cells, self._history_size, 3),

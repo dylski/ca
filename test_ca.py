@@ -18,7 +18,7 @@ class Test1D(unittest.TestCase):
     # 000 => 0
     world.set_rules(rules.CreateBinaryLife1DRule(158))
     init = np.array([0,0,1,0,0])
-    world.set_world(init)
+    world.set_states(init)
     state = world.cells
     self.assertTrue((np.expand_dims(init, axis=1) == state).all())
     world.step()
@@ -59,7 +59,7 @@ class TestGOL2D(unittest.TestCase):
       [1,0,1,0],
       [0,1,1,0],
       [0,0,0,0]])
-    world.set_world(init)
+    world.set_states(init)
     state = world.cells
     self.assertTrue((init.reshape((4,4,1)) == state).all())
     world.step()
