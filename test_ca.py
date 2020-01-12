@@ -20,35 +20,35 @@ class Test1D(unittest.TestCase):
     init = np.array([0,0,1,0,0])
     world.set_world(init)
     state = world.cells
-    self.assertTrue((init == state).all())
+    self.assertTrue((np.expand_dims(init, axis=1) == state).all())
     world.step()
     state = world.cells
     target = np.array([0,1,1,1,0])
-    self.assertTrue((target == state).all())
+    self.assertTrue((np.expand_dims(target, axis=1) == state).all())
     world.step()
     state = world.cells
     target = np.array([1,1,1,0,1])
-    self.assertTrue((target == state).all())
+    self.assertTrue((np.expand_dims(target, axis=1) == state).all())
     world.step()
     state = world.cells
     target = np.array([1,1,0,0,1])
-    self.assertTrue((target == state).all())
+    self.assertTrue((np.expand_dims(target, axis=1) == state).all())
     world.step()
     state = world.cells
     target = np.array([1,0,1,1,1])
-    self.assertTrue((target == state).all())
+    self.assertTrue((np.expand_dims(target, axis=1) == state).all())
     world.step()
     state = world.cells
     target = np.array([1,0,1,1,0])
-    self.assertTrue((target == state).all())
+    self.assertTrue((np.expand_dims(target, axis=1) == state).all())
     world.step()
     state = world.cells
     target = np.array([1,0,1,0,1])
-    self.assertTrue((target == state).all())
+    self.assertTrue((np.expand_dims(target, axis=1) == state).all())
     world.step()
     state = world.cells
     target = np.array([1,0,1,0,1])
-    self.assertTrue((target == state).all())
+    self.assertTrue((np.expand_dims(target, axis=1) == state).all())
 
 class TestGOL2D(unittest.TestCase):
   def test_glider_2d(self):
@@ -61,7 +61,7 @@ class TestGOL2D(unittest.TestCase):
       [0,0,0,0]])
     world.set_world(init)
     state = world.cells
-    self.assertTrue((init == state).all())
+    self.assertTrue((init.reshape((4,4,1)) == state).all())
     world.step()
     state = world.cells
     target = np.array([
@@ -69,7 +69,7 @@ class TestGOL2D(unittest.TestCase):
       [0,0,1,1],
       [0,1,1,0],
       [0,0,0,0]])
-    self.assertTrue((target == state).all())
+    self.assertTrue((target.reshape((4,4,1)) == state).all())
 
 
 
