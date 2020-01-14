@@ -48,13 +48,17 @@ class Renderer1D(Renderer):
     self._history[:, [0]] = np.expand_dims(data, axis=1)
 
   def display(self):
-    self._bitmap = np.zeros((self._num_cells, self._history_size, 3),
-        dtype=np.uint8)
     if self._state_depth == 1:
+      self._bitmap = np.zeros((self._num_cells, self._history_size, 3),
+          dtype=np.uint8)
       # Broadcast over RGB
       self._bitmap[:, :] = self._history * 255
     elif self._state_depth == 3:
+      # Treat as RGB
       self._bitmap = np.array(self._history * 255).astype(np.uint8)
+    elif self._state_depth > 3:
+      # Treat last three as RGB
+      self._bitmap = np.array(self._history[:, :, -3:] * 255).astype(np.uint8)
     else:
       raise ValueError('Unsupported state depth {}'.format(self._state_depth))
     self._bitmap = np.array(Image.fromarray(self._bitmap).resize(

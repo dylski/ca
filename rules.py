@@ -47,6 +47,64 @@ def CreateBinaryLife1DRule(rule):
     return state
   return rule_1d
 
+def diffuser_1d(neighbourhood, mutation=True):
+  if len(neighbourhood) != 3:
+    raise ValueError('neighbourhood must be 3 size')
+  if len(neighbourhood[1]) != 4:
+    raise ValueError('cell state length expected to be 4')
+  winner = 0
+  if neighbourhood[2, 0] > neighbourhood[0, 0]:
+    winner = 2
+  if neighbourhood[1, 0] > neighbourhood[winner, 0]:
+    winner = 1
+  if winner == 1:
+    # Mutate colour
+    colour_mutation = 0.01 if mutation else 0.0
+    state_mutation = 0.002 if mutation else 0.0
+    preserved_state = neighbourhood[1, 0]
+    state_and_colour = neighbourhood[1] + (colour_mutation *
+        np.random.normal(size=neighbourhood[1].shape))
+    state_and_colour[0] = (
+        preserved_state + state_mutation * np.random.standard_cauchy())
+  else:
+    # Inherit colour and decayed state
+    state_and_colour = neighbourhood[winner].copy()
+    colour_mutation = 0.01 if mutation else 0.0
+    state_mutation = 0.00002 if mutation else 0.0
+    preserved_state = neighbourhood[winner, 0]
+    state_and_colour = neighbourhood[winner] + (colour_mutation *
+        np.random.normal(size=neighbourhood[winner].shape))
+    state_and_colour[0] = (
+        0.99 * preserved_state + state_mutation * np.random.standard_cauchy())
+  return state_and_colour.clip(0, 1)
+
+def diffuser_2d(neighbourhood, mutation=True):
+  if neighbourhood.shape != (3,3,4):
+    raise ValueError('neighbourhood must be 9 size')
+  states = neighbourhood[:, :, 0]
+  winner = np.array(np.where(states == states.max()))[:, 0]
+  if (winner == (1, 1)).all():
+    # Mutate colour
+    colour_mutation = 0.01 if mutation else 0.0
+    state_mutation = 0.002 if mutation else 0.0
+    preserved_state = neighbourhood[winner[0], winner[1], 0]
+    state_and_colour = neighbourhood[winner[0], winner[1]] + (colour_mutation *
+        np.random.normal(size=neighbourhood[winner[0], winner[1]].shape))
+    state_and_colour[0] = (
+        preserved_state + state_mutation * np.random.standard_cauchy())
+  else:
+    # Inherit colour and decayed state
+    state_and_colour = neighbourhood[winner[0], winner[1]].copy()
+    colour_mutation = 0.01 if mutation else 0.0
+    state_mutation = 0.00002 if mutation else 0.0
+    preserved_state = neighbourhood[winner[0], winner[1], 0]
+    state_and_colour = neighbourhood[winner[0], winner[1]] + (colour_mutation *
+        np.random.normal(size=neighbourhood[winner[0], winner[1]].shape))
+    state_and_colour[0] = (
+        0.99 * preserved_state + state_mutation * np.random.standard_cauchy())
+  return state_and_colour.clip(0, 1)
+
+
 
 class TestWorld(unittest.TestCase):
   def test_1D(self):
@@ -97,6 +155,63 @@ class TestWorld(unittest.TestCase):
       [1,0,0],
       [1,0,1],
       [0,0,1]])) == 0)
+
+  def test_diffuser_1d(self):
+    input = np.array([
+      [0.0,0.1,0.2,0.3],
+      [0.1,0.4,0.5,0.6],
+      [0.0,0.7,0.8,0.9]])
+    # Winner
+    self.assertTrue(np.allclose(diffuser_1d(input,
+      mutation=False)[0], 0.1, 1.0))
+    self.assertTrue((diffuser_1d(input)[1:] != input[1,1:]).all())
+    self.assertTrue(np.allclose(diffuser_1d(input),
+      np.array([0.1,0.4,0.5,0.6]), 0.2))
+
+    input = np.array([
+      [0.2,0.1,0.2,0.3],
+      [0.1,0.4,0.5,0.6],
+      [0.0,0.7,0.8,0.9]])
+    self.assertTrue(np.allclose(diffuser_1d(input,
+      mutation=False)[0], 0.2*0.99, 0.1))
+    self.assertTrue((diffuser_1d(input,
+      mutation=False)[1:] == input[0,1:]).all())
+
+  def test_diffuser_2d(self):
+    input = np.array([
+      [[0.0, 0.1, 0.1, 0.2],
+      [0.0, 0.2, 0.2, 0.3],
+      [0.0, 0.3, 0.3, 0.4]],
+
+      [[0.0, 0.4, 0.4, 0.5],
+      [0.1, 0.5, 0.5, 0.6],
+      [0.0, 0.6, 0.6, 0.7]],
+
+      [[0.0, 0.7, 0.7, 0.8],
+      [0.0, 0.8, 0.8, 0.9],
+      [0.05, 0.9, 0.9, 0.0]]]
+      )
+    self.assertTrue((diffuser_2d(input, mutation=False)[0] == 0.1).all())
+    self.assertTrue((diffuser_2d(input)[1:] != input[1, 1, 1:]).all())
+    self.assertTrue((diffuser_2d(input, mutation=False) == np.array([0.1, 0.5,
+      0.5, 0.6])).all())
+
+    input = np.array([
+      [[0.0, 0.1, 0.1, 0.2],
+      [0.2, 0.2, 0.2, 0.3],
+      [0.0, 0.3, 0.3, 0.4]],
+
+      [[0.0, 0.4, 0.4, 0.5],
+      [0.1, 0.5, 0.5, 0.6],
+      [0.0, 0.6, 0.6, 0.7]],
+
+      [[0.0, 0.7, 0.7, 0.8],
+      [0.0, 0.8, 0.8, 0.9],
+      [0.15, 0.9, 0.9, 0.0]]]
+      )
+    self.assertTrue(diffuser_2d(input, mutation=False)[0] == 0.2*0.99)
+    self.assertTrue((diffuser_2d(input,
+      mutation=False)[1:] == input[0, 1, 1:]).all())
 
 if __name__ == '__main__':
   unittest.main()
