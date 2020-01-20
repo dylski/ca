@@ -21,9 +21,9 @@ if __name__ == '__main__':
   world = World1D(num_cells, num_states=num_states)
   states = np.random.uniform(size=(num_cells, num_states))
   states[:, :] = 0
-  # highs = list(set(np.random.randint(num_cells, size=(int(num_cells/80)))))
-  # states[highs, 0] = 1
-  states[int(num_cells/2), :] = 1
+  highs = list(set(np.random.randint(num_cells, size=(int(num_cells/80)))))
+  states[highs, 0] = 1
+  # states[int(num_cells/2), :] = 1
   world.set_states(states)
   world.set_rules(rules.diffuser_1d)
 

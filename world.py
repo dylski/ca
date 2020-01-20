@@ -39,6 +39,8 @@ class World():
     assert(False)
 
   def set_rules(self, rules):
+    # TODO: Provide list of rules. However, need to record which states each
+    # rule affects as compounding all returned states is not valid
     self._rules = rules
 
   def step(self):
