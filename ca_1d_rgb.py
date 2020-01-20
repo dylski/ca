@@ -4,11 +4,12 @@ import pygame
 from renderer import Renderer1D
 import rules
 from pygame import surfarray
+from world import EdgeEffect
 from world import World1D
 
 if __name__ == '__main__':
   ap = argparse.ArgumentParser()
-  ap.add_argument('-n', '--num_cells', help='Cells wide', default=127)
+  ap.add_argument('-n', '--num_cells', help='Cells wide', default=128)
   ap.add_argument(
       '-l', '--history_length', help='Length of history', default=96)
   ap.add_argument(
@@ -36,7 +37,8 @@ if __name__ == '__main__':
 
   num_states = 3
   mutation = False  # 0.025
-  world = World1D(num_cells, num_states=num_states)
+  world = World1D(num_cells, num_states=num_states,
+      edge_effect=EdgeEffect.reflect)
   states = np.random.uniform(size=(num_cells, num_states))
   if red_rule_set:
     world.set_rules(rules.CreateBinaryLife1DRule(

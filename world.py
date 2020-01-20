@@ -1,5 +1,11 @@
+from enum import IntEnum
 import numpy as np
 import unittest
+
+class Boundary(IntEnum):
+  dead = 0
+  reflect = 1
+  wrap = 2
 
 class World():
   '''
@@ -36,6 +42,7 @@ class World():
     assert(False)
 
   def neighbourhood(self, cell_coords):
+    """Note: _world_ coordinates, i.e. including border."""
     assert(False)
 
   def set_rules(self, rules):
@@ -73,11 +80,16 @@ class World():
   def _set_state(self, cell_coords):
     assert(False)
 
+
 class World1D(World):
   '''
   Cell state grids for 1D, 2D and 3D CAs.
   Grid padding of 1 with dead cells.
   '''
+
+  def __init__(self, dim, num_states=1, boundary=Boundary.dead):
+    super().__init__(dim, num_states)
+    self._boundary = boundary
 
   def _set_states(self, world):
     self._world[1:world.shape[0] + 1] = world
@@ -90,8 +102,17 @@ class World1D(World):
     return self._world[coord - 1: coord + 2]
 
   def _step(self):
+    self._boundary_effect()
     for i in range(1, self._dim[0] + 1):
       self._world_next[i] = self._rules(self.neighbourhood(i))
+
+  def _boundary_effect(self):
+    if self._boundary == Boundary.wrap:
+      self._world[0] = self._world[-2]
+      self._world[-1] = self._world[1]
+    elif self._boundary == Boundary.reflect:
+      self._world[0] = self._world[1]
+      self._world[-1] = self._world[-2]
 
   def set_cell_state(self, coord, state):
     self._world[np.array(coord) + 1] = state
@@ -173,12 +194,35 @@ class TestWorld(unittest.TestCase):
   def test_neighbours_1D(self):
     _world = World1D(dim=4)
     _world.set_states(np.array([0, 1, 2, 3]))
+    _world._boundary_effect()
     neighbours = _world.neighbourhood(2)
     self.assertTrue((neighbours == np.array([0, 1, 2])[..., np.newaxis]).all())
     neighbours = _world.neighbourhood(1)
     self.assertTrue((neighbours == np.array([0, 0, 1])[..., np.newaxis]).all())
     neighbours = _world.neighbourhood(4)
     self.assertTrue((neighbours == np.array([2, 3, 0])[..., np.newaxis]).all())
+
+  def test_neighbours_1D_wrap(self):
+    _world = World1D(dim=4, boundary=Boundary.wrap)
+    _world.set_states(np.array([0, 1, 2, 3]))
+    _world._boundary_effect()
+    neighbours = _world.neighbourhood(2)
+    self.assertTrue((neighbours == np.array([0, 1, 2])[..., np.newaxis]).all())
+    neighbours = _world.neighbourhood(1)
+    self.assertTrue((neighbours == np.array([3, 0, 1])[..., np.newaxis]).all())
+    neighbours = _world.neighbourhood(4)
+    self.assertTrue((neighbours == np.array([2, 3, 0])[..., np.newaxis]).all())
+
+  def test_neighbours_1D_reflect(self):
+    _world = World1D(dim=4, boundary=Boundary.reflect)
+    _world.set_states(np.array([0, 1, 2, 3]))
+    _world._boundary_effect()
+    neighbours = _world.neighbourhood(2)
+    self.assertTrue((neighbours == np.array([0, 1, 2])[..., np.newaxis]).all())
+    neighbours = _world.neighbourhood(1)
+    self.assertTrue((neighbours == np.array([0, 0, 1])[..., np.newaxis]).all())
+    neighbours = _world.neighbourhood(4)
+    self.assertTrue((neighbours == np.array([2, 3, 3])[..., np.newaxis]).all())
 
   def test_neighbours_2D(self):
     _world = World2D(dim=(4,4))
