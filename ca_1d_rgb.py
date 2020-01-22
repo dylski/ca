@@ -32,7 +32,7 @@ if __name__ == '__main__':
     blue_rule_set = int(args.get('blue_rule_set'))
   display_size = (640, 480)
 
-  if not red_rule_set and not green_rule_set and not blue_rule_set:
+  if red_rule_set is None and green_rule_set is None and blue_rule_set is None:
     raise ValueError('Set at least one rule')
 
   num_states = 3
@@ -40,13 +40,13 @@ if __name__ == '__main__':
       # boundary=Boundary.dead)
       boundary=Boundary.reflect)
   states = np.random.uniform(size=(num_cells, num_states))
-  if red_rule_set:
+  if red_rule_set is not None:
     world.set_rules(rules.CreateBinaryLife1DRule(red_rule_set, state_index=0))
     states[:, 0] = 0
-  if green_rule_set:
+  if green_rule_set is not None:
     world.set_rules(rules.CreateBinaryLife1DRule(green_rule_set, state_index=1))
     states[:, 1] = 0
-  if blue_rule_set:
+  if blue_rule_set is not None:
     world.set_rules(rules.CreateBinaryLife1DRule(blue_rule_set, state_index=2))
     states[:, 2] = 0
   states[int(num_cells/2), :] = 1

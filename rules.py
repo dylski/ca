@@ -100,13 +100,24 @@ def diffuser_2d(neighbourhood, mutation=True):
 
 
 class TestWorld(unittest.TestCase):
-  def test_1D(self):
+  def test_1D_rule_30(self):
     rule30 = CreateBinaryLife1DRule(30, state_index=0)
     self.assertTrue(rule30(np.array([0,0,0]).reshape(3,1)) == 0)
     self.assertTrue(rule30(np.array([0,0,1]).reshape(3,1)) == 1)
     self.assertTrue(rule30(np.array([0,1,0]).reshape(3,1)) == 0)
     self.assertTrue(rule30(np.array([0,1,1]).reshape(3,1)) == 0)
     self.assertTrue(rule30(np.array([1,0,0]).reshape(3,1)) == 1)
+    self.assertTrue(rule30(np.array([1,0,1]).reshape(3,1)) == 0)
+    self.assertTrue(rule30(np.array([1,1,0]).reshape(3,1)) == -1)
+    self.assertTrue(rule30(np.array([1,1,1]).reshape(3,1)) == -1)
+
+  def test_1D_rule_0(self):
+    rule30 = CreateBinaryLife1DRule(0, state_index=0)
+    self.assertTrue(rule30(np.array([0,0,0]).reshape(3,1)) == 0)
+    self.assertTrue(rule30(np.array([0,0,1]).reshape(3,1)) == 0)
+    self.assertTrue(rule30(np.array([0,1,0]).reshape(3,1)) == -1)
+    self.assertTrue(rule30(np.array([0,1,1]).reshape(3,1)) == -1)
+    self.assertTrue(rule30(np.array([1,0,0]).reshape(3,1)) == 0)
     self.assertTrue(rule30(np.array([1,0,1]).reshape(3,1)) == 0)
     self.assertTrue(rule30(np.array([1,1,0]).reshape(3,1)) == -1)
     self.assertTrue(rule30(np.array([1,1,1]).reshape(3,1)) == -1)

@@ -26,6 +26,7 @@ class World():
     # self._world_2 = np.zeros(np.array(self._dim) + 2)
     self._world = self._world_1
     self._world_next = self._world_2
+    self._rules = []
 
   def set_states(self, states):
     if ((len(self._state_dim) - len(states.shape) == 1)
@@ -48,7 +49,7 @@ class World():
   def set_rules(self, rules):
     # TODO: Provide list of rules. However, need to record which states each
     # rule affects as compounding all returned states is not valid
-    self._rules = rules
+    self._rules.append(rules)
 
   def step(self):
     self._step()
@@ -105,7 +106,8 @@ class World1D(World):
     self._boundary_effect()
     self._world_next = self._world.copy()
     for i in range(1, self._dim[0] + 1):
-      self._world_next[i] += self._rules(self.neighbourhood(i))
+      for rule in self._rules:
+        self._world_next[i] += rule(self.neighbourhood(i))
 
   def _boundary_effect(self):
     if self._boundary == Boundary.wrap:
@@ -153,7 +155,8 @@ class World2D(World):
   def _step(self):
     for i in range(1, self._dim[0] + 1):
       for j in range(1, self._dim[1] + 1):
-        self._world_next[i, j] += self._rules(self.neighbourhood((i,j)))
+        for rule in self._rules:
+          self._world_next[i, j] += rule(self.neighbourhood((i,j)))
 
   def set_state(self, cell_coords):
     coords = np.array(cell_coords) + 1
