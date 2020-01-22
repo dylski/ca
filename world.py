@@ -103,8 +103,9 @@ class World1D(World):
 
   def _step(self):
     self._boundary_effect()
+    self._world_next = self._world.copy()
     for i in range(1, self._dim[0] + 1):
-      self._world_next[i] = self._rules(self.neighbourhood(i))
+      self._world_next[i] += self._rules(self.neighbourhood(i))
 
   def _boundary_effect(self):
     if self._boundary == Boundary.wrap:
@@ -113,6 +114,9 @@ class World1D(World):
     elif self._boundary == Boundary.reflect:
       self._world[0] = self._world[1]
       self._world[-1] = self._world[-2]
+    else:
+      self._world[0] = 0
+      self._world[-1] = 0
 
   def set_cell_state(self, coord, state):
     self._world[np.array(coord) + 1] = state
@@ -149,7 +153,7 @@ class World2D(World):
   def _step(self):
     for i in range(1, self._dim[0] + 1):
       for j in range(1, self._dim[1] + 1):
-        self._world_next[i, j] = self._rules(self.neighbourhood((i,j)))
+        self._world_next[i, j] += self._rules(self.neighbourhood((i,j)))
 
   def set_state(self, cell_coords):
     coords = np.array(cell_coords) + 1

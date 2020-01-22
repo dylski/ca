@@ -21,7 +21,7 @@ def GOL2D(neighbourhood):
     else:
       return 0
 
-def CreateBinaryLife1DRule(rule, state_index=0, other_state_mutation=None):
+def CreateBinaryLife1DRule(rule, state_index=0):
   # For now uses _first_ state in state array for each cell.
   # Excess states have no infleunce but are mutated just for fun.
   def rule_1d(neighbourhood):
@@ -32,24 +32,12 @@ def CreateBinaryLife1DRule(rule, state_index=0, other_state_mutation=None):
     neighbourhood_state = neighbourhood[:, state_index] > 0.5
     rule_index = np.packbits(np.append([0,0,0,0,0],
       neighbourhood_state.astype(int)))[0]
-    if other_state_mutation:
-      new_cell_states = neighbourhood[1] + (other_state_mutation *
-          np.random.normal(size=neighbourhood[1].shape))
-    else:
-      new_cell_states = neighbourhood[1].copy()
+    cell_state_change = np.zeros_like(neighbourhood[1])
     if rule & (1 << rule_index):
-      new_cell_states[state_index] = 1.
+      cell_state_change[state_index] = 1. - neighbourhood[1][state_index]
     else:
-      new_cell_states[state_index] = 0.
-    # new_cell_states = new_cell_states.clip(0, 1)
-    new_cell_states[state_index] = new_cell_states[state_index].clip(0, 1)
-    if other_state_mutation:
-      other_states = list(set(range(new_cell_states.shape[0])) -
-          set([state_index]))
-      if other_states:
-        new_cell_states[other_states] = new_cell_states[other_states].clip(0,
-            0.25)
-    return new_cell_states
+      cell_state_change[state_index] = -neighbourhood[1][state_index]
+    return cell_state_change
   return rule_1d
 
 def diffuser_1d(neighbourhood, mutation=True):
@@ -116,33 +104,33 @@ class TestWorld(unittest.TestCase):
     rule30 = CreateBinaryLife1DRule(30, state_index=0)
     self.assertTrue(rule30(np.array([0,0,0]).reshape(3,1)) == 0)
     self.assertTrue(rule30(np.array([0,0,1]).reshape(3,1)) == 1)
-    self.assertTrue(rule30(np.array([0,1,0]).reshape(3,1)) == 1)
-    self.assertTrue(rule30(np.array([0,1,1]).reshape(3,1)) == 1)
+    self.assertTrue(rule30(np.array([0,1,0]).reshape(3,1)) == 0)
+    self.assertTrue(rule30(np.array([0,1,1]).reshape(3,1)) == 0)
     self.assertTrue(rule30(np.array([1,0,0]).reshape(3,1)) == 1)
     self.assertTrue(rule30(np.array([1,0,1]).reshape(3,1)) == 0)
-    self.assertTrue(rule30(np.array([1,1,0]).reshape(3,1)) == 0)
-    self.assertTrue(rule30(np.array([1,1,1]).reshape(3,1)) == 0)
+    self.assertTrue(rule30(np.array([1,1,0]).reshape(3,1)) == -1)
+    self.assertTrue(rule30(np.array([1,1,1]).reshape(3,1)) == -1)
 
   def test_1D_2_states(self):
     rule30 = CreateBinaryLife1DRule(30, state_index=1)
     io = [
         ([[0, 0], [0, 0], [0, 0]], [0, 0]),
         ([[0, 0], [0, 0], [0, 1]], [0, 1]),
-        ([[0, 0], [0, 1], [0, 0]], [0, 1]),
-        ([[0, 0], [0, 1], [0, 1]], [0, 1]),
+        ([[0, 0], [0, 1], [0, 0]], [0, 0]),
+        ([[0, 0], [0, 1], [0, 1]], [0, 0]),
         ([[0, 1], [0, 0], [0, 0]], [0, 1]),
         ([[0, 1], [0, 0], [0, 1]], [0, 0]),
-        ([[0, 1], [0, 1], [0, 0]], [0, 0]),
-        ([[0, 1], [0, 1], [0, 1]], [0, 0]),
+        ([[0, 1], [0, 1], [0, 0]], [0, -1]),
+        ([[0, 1], [0, 1], [0, 1]], [0, -1]),
 
-        ([[1, 0], [1, 0], [1, 0]], [1, 0]),
-        ([[1, 0], [1, 0], [1, 1]], [1, 1]),
-        ([[1, 0], [1, 1], [1, 0]], [1, 1]),
-        ([[1, 0], [1, 1], [1, 1]], [1, 1]),
-        ([[1, 1], [1, 0], [1, 0]], [1, 1]),
-        ([[1, 1], [1, 0], [1, 1]], [1, 0]),
-        ([[1, 1], [1, 1], [1, 0]], [1, 0]),
-        ([[1, 1], [1, 1], [1, 1]], [1, 0]),
+        ([[1, 0], [1, 0], [1, 0]], [0, 0]),
+        ([[1, 0], [1, 0], [1, 1]], [0, 1]),
+        ([[1, 0], [1, 1], [1, 0]], [0, 0]),
+        ([[1, 0], [1, 1], [1, 1]], [0, 0]),
+        ([[1, 1], [1, 0], [1, 0]], [0, 1]),
+        ([[1, 1], [1, 0], [1, 1]], [0, 0]),
+        ([[1, 1], [1, 1], [1, 0]], [0, -1]),
+        ([[1, 1], [1, 1], [1, 1]], [0, -1]),
 
         ]
     for cells, target in io:
