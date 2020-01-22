@@ -39,7 +39,8 @@ if __name__ == '__main__':
   world = World1D(num_cells, num_states=num_states,
       # boundary=Boundary.dead)
       boundary=Boundary.reflect)
-  states = np.random.uniform(size=(num_cells, num_states))
+  states = np.zeros(shape=(num_cells, num_states))
+  # states = np.random.uniform(size=(num_cells, num_states))
   if red_rule_set is not None:
     world.set_rules(rules.CreateBinaryLife1DRule(red_rule_set, state_index=0))
     states[:, 0] = 0
@@ -49,6 +50,7 @@ if __name__ == '__main__':
   if blue_rule_set is not None:
     world.set_rules(rules.CreateBinaryLife1DRule(blue_rule_set, state_index=2))
     states[:, 2] = 0
+
   states[int(num_cells/2), :] = 1
   world.set_states(states)
 

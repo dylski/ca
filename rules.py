@@ -37,6 +37,7 @@ def CreateBinaryLife1DRule(rule, state_index=0):
       cell_state_change[state_index] = 1. - neighbourhood[1][state_index]
     else:
       cell_state_change[state_index] = -neighbourhood[1][state_index]
+    cell_state_change /= 1
     return cell_state_change
   return rule_1d
 
