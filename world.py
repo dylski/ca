@@ -107,6 +107,7 @@ class World1D(World):
     for i in range(1, self._dim[0] + 1):
       for rule in self._rules:
         self._world_next[i] += rule(self.neighbourhood(i))
+    self._world_next = self._world_next.clip(0, 1)
 
   def _boundary_effect(self):
     if self._boundary == Boundary.wrap:

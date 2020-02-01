@@ -38,8 +38,8 @@ Three state 1D CA assigned to RGB colours. Separate rule assigned to each state.
 ###Diffuse CA
 Cells inherit neighbour qualities if the neighbour has a higher **energy**
 state. I've only just started looking at this and it's not set up to be
-particularly configurable yet. There's a lot to be played around with (and it's
-currently a little broken).
+particularly configurable yet. There's a lot to be played around with. Can
+produce patterns similar to [Loki](http://www.alifeonpi.com/loki.html).
 
     $ python3 ca_1d_diffuser.py
 

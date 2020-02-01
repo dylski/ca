@@ -48,6 +48,7 @@ def diffuser_1d(neighbourhood, mutation=True):
     winner = 0
   if neighbourhood[1, 0] > neighbourhood[winner, 0]:
     winner = 1
+  orig_state_and_colour = neighbourhood[1].copy()
   if winner == 1:
     # Mutate colour
     colour_mutation = 0.01 if mutation else 0.0
@@ -67,7 +68,7 @@ def diffuser_1d(neighbourhood, mutation=True):
         np.random.normal(size=neighbourhood[winner].shape))
     state_and_colour[0] = (
         0.999 * preserved_state + state_mutation * np.random.standard_cauchy())
-  return state_and_colour.clip(0, 1)
+  return state_and_colour - orig_state_and_colour
 
 def diffuser_2d(neighbourhood, mutation=True):
   if neighbourhood.shape != (3,3,4):
