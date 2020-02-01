@@ -1,6 +1,5 @@
 # Multi-state Cellular Automata - [A-Life On Pi](http://www.alifeonpi.com) project
 
-![cover_gif](https://github.com/dylski/loki/blob/master/rgb_energydown.gif)
 A cellular automota simulation library that I intend to coax into producing
 pretty patterns.
 

@@ -10,9 +10,12 @@ if __name__ == '__main__':
   ap = argparse.ArgumentParser()
   ap.add_argument('-n', '--num_cells', help='Cells wide', default=127)
   ap.add_argument('-g', '--history', help='Size of history', default=96)
+  ap.add_argument('-f', '--save_frames', action='store_true',
+      help='Save frames to outout_v directory')
   args = vars(ap.parse_args())
   num_cells = int(args.get('num_cells'))
   history = int(args.get('history'))
+  save_frames = args.get('save_frames', False)
   display_size = (640, 480)
 
   num_states = 4
@@ -29,11 +32,15 @@ if __name__ == '__main__':
       display_size=display_size, state_depth=num_states)
   renderer.next_gen(world.cells)
   renderer.display()
+  if save_frames:
+    renderer.save_frame()
 
   while True:
     world.step()
     renderer.next_gen(world.cells)
     renderer.display()
+    if save_frames:
+      renderer.save_frame()
 
     stop = False
     for event in pygame.event.get():
@@ -42,5 +49,4 @@ if __name__ == '__main__':
 
     if stop:
       break
-
 
