@@ -6,6 +6,7 @@ class Boundary(IntEnum):
   dead = 0
   reflect = 1
   wrap = 2
+  live = 3
 
 class World():
   '''
@@ -47,8 +48,6 @@ class World():
     assert(False)
 
   def set_rules(self, rules):
-    # TODO: Provide list of rules. However, need to record which states each
-    # rule affects as compounding all returned states is not valid
     self._rules.append(rules)
 
   def step(self):
@@ -85,7 +84,7 @@ class World():
 class World1D(World):
   '''
   Cell state grids for 1D, 2D and 3D CAs.
-  Grid padding of 1 with dead cells.
+  Grid padding of 1.
   '''
 
   def __init__(self, dim, num_states=1, boundary=Boundary.dead):
@@ -116,9 +115,12 @@ class World1D(World):
     elif self._boundary == Boundary.reflect:
       self._world[0] = self._world[1]
       self._world[-1] = self._world[-2]
-    else:
+    elif self._boundary == Boundary.dead:
       self._world[0] = 0
       self._world[-1] = 0
+    elif self._boundary == Boundary.live:
+      self._world[0] = 1
+      self._world[-1] = 1
 
   def set_cell_state(self, coord, state):
     self._world[np.array(coord) + 1] = state

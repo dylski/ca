@@ -3,6 +3,7 @@
 from PIL import Image
 import numpy as np
 import pygame
+from pathlib import Path
 from pygame import surfarray
 import unittest
 
@@ -38,16 +39,21 @@ class Renderer1D(Renderer):
     # note: x = axis 0.
     self._bitmap = np.zeros(self._bitmap_size, dtype=np.uint8)
     self._history = np.zeros(self._state_size)
+    self._frame_num = 0
 
   def next_gen(self, data):
-    # import pdb; pdb.set_trace()
     self._history = np.roll(self._history, 1, axis=1)
     # Indexing with list preserves dimensioality instead of squeezing result
     # e.g. result will be (4,1,3) not squeezed to (4,3)
     # Also insert time dimension into data
     self._history[:, [0]] = np.expand_dims(data, axis=1)
+    self._bitmap = None
+    self._frame_num += 1
 
-  def display(self):
+  def _create_bitmap(self):
+    if self._bitmap is not None:
+      return
+
     if self._state_depth == 1:
       self._bitmap = np.zeros((self._num_cells, self._history_size, 3),
           dtype=np.uint8)
@@ -63,11 +69,20 @@ class Renderer1D(Renderer):
       raise ValueError('Unsupported state depth {}'.format(self._state_depth))
     self._bitmap = np.array(Image.fromarray(self._bitmap).resize(
       (self._display_size[1], self._display_size[0])))
-    if not self._testing:
-      surfarray.blit_array(self._display, self._bitmap)
-      pygame.display.flip()
-    else:
+
+  def display(self):
+    self._create_bitmap()
+    if self._testing:
       return self._bitmap
+    surfarray.blit_array(self._display, self._bitmap)
+    pygame.display.flip()
+
+  def save_frame(self):
+    self._create_bitmap()
+    Path('output_v').mkdir(parents=True, exist_ok=True)
+    Image.fromarray(self._bitmap.swapaxes(0,1)).resize(
+        self._display_size).save(
+            'output_v/loki_frame_t{:09d}.png'.format(self._frame_num))
 
 class TestRenderer(unittest.TestCase):
   def test_1D_sizes(self):

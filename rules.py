@@ -22,8 +22,6 @@ def GOL2D(neighbourhood):
       return 0
 
 def CreateBinaryLife1DRule(rule, state_index=0):
-  # For now uses _first_ state in state array for each cell.
-  # Excess states have no infleunce but are mutated just for fun.
   def rule_1d(neighbourhood):
     # http://mathworld.wolfram.com/ElementaryCellularAutomaton.html
     if len(neighbourhood) != 3:
@@ -37,7 +35,6 @@ def CreateBinaryLife1DRule(rule, state_index=0):
       cell_state_change[state_index] = 1. - neighbourhood[1][state_index]
     else:
       cell_state_change[state_index] = -neighbourhood[1][state_index]
-    cell_state_change /= 1
     return cell_state_change
   return rule_1d
 

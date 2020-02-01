@@ -10,11 +10,9 @@ if __name__ == '__main__':
   ap = argparse.ArgumentParser()
   ap.add_argument('-n', '--num_cells', help='Cells wide', default=127)
   ap.add_argument('-g', '--history', help='Size of history', default=96)
-  ap.add_argument('-r', '--rule_set', help='Rule byte code', default=158)
   args = vars(ap.parse_args())
   num_cells = int(args.get('num_cells'))
   history = int(args.get('history'))
-  rule_set = int(args.get('rule_set'))
   display_size = (640, 480)
 
   num_states = 4
