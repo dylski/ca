@@ -39,6 +39,11 @@ def CreateBinaryLife1DRule(rule, state_index=0):
   return rule_1d
 
 def diffuser_1d(neighbourhood, mutation=True):
+  # Expects state values: [Energy, R, G, B]
+  # Cell inherits mutated RGB and decayed energy from neighbourhood winner
+  # Unless it is the winner in which case it mutates itself.
+  # Inherited RGBs are mutated less than if the cell is itself the winner.
+  # This is to enable waves of colour to radiate out from winning cells.
   if len(neighbourhood) != 3:
     raise ValueError('neighbourhood must be 3 size')
   if len(neighbourhood[1]) != 4:
@@ -52,7 +57,7 @@ def diffuser_1d(neighbourhood, mutation=True):
   if winner == 1:
     # Mutate colour
     colour_mutation = 0.01 if mutation else 0.0
-    state_mutation = 0.01 if mutation else 0.0
+    state_mutation = 0.001 if mutation else 0.0
     preserved_state = neighbourhood[1, 0]
     state_and_colour = neighbourhood[1] + (colour_mutation *
         np.random.normal(size=neighbourhood[1].shape))
@@ -71,6 +76,7 @@ def diffuser_1d(neighbourhood, mutation=True):
   return state_and_colour - orig_state_and_colour
 
 def diffuser_2d(neighbourhood, mutation=True):
+  # Expects state values: [Energy, R, G, B]
   if neighbourhood.shape != (3,3,4):
     raise ValueError('neighbourhood must be 9 size')
   states = neighbourhood[:, :, 0]
@@ -95,6 +101,29 @@ def diffuser_2d(neighbourhood, mutation=True):
     state_and_colour[0] = (
         0.99 * preserved_state + state_mutation * np.random.standard_cauchy())
   return state_and_colour.clip(0, 1)
+
+def minimal_diffuser_1d(neighbourhood, mutation=True):
+  # Expects state values: [Energy, R, G, B]
+  # Cell inherits mutated RGB and decayed energy from neighbourhood winner
+  if len(neighbourhood) != 3:
+    raise ValueError('neighbourhood must be 3 size')
+  if len(neighbourhood[1]) != 4:
+    raise ValueError('cell state length expected to be 4')
+  winner = 2
+  if neighbourhood[2, 0] < neighbourhood[0, 0]:
+    winner = 0
+  orig_state_and_colour = neighbourhood[1].copy()
+  # Inherit colour and decayed state
+  state_and_colour = neighbourhood[winner].copy()
+  colour_mutation = 0.00001 if mutation else 0.0
+  state_mutation = 0.00002 if mutation else 0.0
+  preserved_state = neighbourhood[winner, 0]
+  state_and_colour = neighbourhood[winner] + (colour_mutation *
+      np.random.normal(size=neighbourhood[winner].shape))
+  state_and_colour[0] = (
+      0.999 * preserved_state + state_mutation * np.random.standard_cauchy())
+  return state_and_colour - orig_state_and_colour
+
 
 
 
