@@ -13,12 +13,13 @@ class World():
   Cell state grids for 1D, 2D and 3D CAs.
   Grid padding of 1 with dead cells.
   '''
-  def __init__(self, dim, num_states=1):
+  def __init__(self, dim, num_states=1, boundary=None):
     if not isinstance(dim, (list, tuple, np.ndarray)):
       dim = [dim]
     # Dimensions of the world of cells
     self._dim = dim
     self._num_states = num_states
+    self._boundary = boundary
     # Dimensions of the world including number of states per cell.
     self._state_dim = np.concatenate([np.array(self._dim) + 2, [num_states]])
     self._world_1 = np.zeros(self._state_dim)
@@ -37,7 +38,7 @@ class World():
       states = states[..., np.newaxis]
     if states.shape != tuple(list(self._dim) + [self._num_states]):
       raise ValueError('Dim mismatch {} !+ {}'.format(
-        states.shape, self._dim + [self._num_states]))
+        states.shape, list(self._dim) + [self._num_states]))
     self._set_states(states)
 
   def _set_states(self):
@@ -51,12 +52,16 @@ class World():
     self._rules.append(rules)
 
   def step(self):
+    self._boundary_effect()
     self._step()
     self._flip_worlds()
     pass
 
   def _step(self):
     assert(False)
+
+  def _boundary_effect(self):
+    raise ValueError('Missing _boundary_effect() implementation')
 
   @property
   def cells(self):
@@ -87,10 +92,6 @@ class World1D(World):
   Grid padding of 1.
   '''
 
-  def __init__(self, dim, num_states=1, boundary=Boundary.dead):
-    super().__init__(dim, num_states)
-    self._boundary = boundary
-
   def _set_states(self, world):
     self._world[1:world.shape[0] + 1] = world
 
@@ -102,7 +103,6 @@ class World1D(World):
     return self._world[coord - 1: coord + 2]
 
   def _step(self):
-    self._boundary_effect()
     self._world_next = self._world.copy()
     for i in range(1, self._dim[0] + 1):
       for rule in self._rules:
@@ -161,6 +161,9 @@ class World2D(World):
         for rule in self._rules:
           self._world_next[i, j] += rule(self.neighbourhood((i,j)))
 
+  def _boundary_effect(self):
+    print('Ignoring boundary effect')
+
   def set_state(self, cell_coords):
     coords = np.array(cell_coords) + 1
 
@@ -197,7 +200,46 @@ class World3D(World):
 
   def _set_state(self, cell_coords):
     coords = np.array(cell_coords) + 1
-    pass
+
+  def _step(self):
+    self._world_next = self._world.copy()
+    for x in range(1, self._dim[0] + 1):
+      for y in range(1, self._dim[1] + 1):
+        for z in range(1, self._dim[2] + 1):
+          for rule in self._rules:
+            self._world_next[x, y, x] += rule(self.neighbourhood((x, y, z)))
+    self._world_next = self._world_next.clip(0, 1)
+
+  def _boundary_effect(self):
+    if self._boundary == Boundary.wrap:
+      self._world[0, :, :] = self._world[-2, :, :]
+      self._world[-1, :, :] = self._world[1, :, :]
+      self._world[:, 0, :] = self._world[:, -2, :]
+      self._world[:, -1, :] = self._world[:, 1, :]
+      self._world[:, :, 0] = self._world[:, :, -2]
+      self._world[:, :, -1] = self._world[:, :, 1]
+    elif self._boundary == Boundary.reflect:
+      self._world[0, :, :] = self._world[1, :, :]
+      self._world[-1, :, :] = self._world[-2, :, :]
+      self._world[:, 0, :] = self._world[:, 1, :]
+      self._world[:, -1, :] = self._world[:, -2, :]
+      self._world[:, :, 0] = self._world[:, :, 1]
+      self._world[:, :, -1] = self._world[:, :, -2]
+    elif self._boundary == Boundary.dead:
+      self._world[0, :, :] = 0
+      self._world[-1, :, :] = 0
+      self._world[:, 0, :] = 0
+      self._world[:, -1, :] = 0
+      self._world[:, :, 0] = 0
+      self._world[:, :, -1] = 0
+    elif self._boundary == Boundary.live:
+      self._world[0, :, :] = 1
+      self._world[-1, :, :] = 1
+      self._world[:, 0, :] = 1
+      self._world[:, -1, :] = 1
+      self._world[:, :, 0] = 1
+      self._world[:, :, -1] = 1
+
 
 
 class TestWorld(unittest.TestCase):
@@ -315,6 +357,46 @@ class TestWorld(unittest.TestCase):
         [0, 0, 0],
       ],
       ])[..., np.newaxis]).all())
+
+  def test_neighbours_3D_wrap(self):
+    _world = World3D(dim=(2,2,2), boundary=Boundary.wrap)
+    _world.set_states(np.array(range(8)).reshape((2,2,2)))
+    _world._boundary_effect()
+    # (2,2,2) is the 8th element of our state within the larger world
+    neighbours = _world.neighbourhood((2,2,2))
+    self.assertTrue((neighbours[1, 1, 1] == 7))
+    self.assertTrue((neighbours == np.array(
+      [[[0., 1., 0.],
+        [2., 3., 2.],
+        [0., 1., 0.]],
+
+       [[4., 5., 4.],
+        [6., 7., 6.],
+        [4., 5., 4.]],
+
+       [[0., 1., 0.],
+        [2., 3., 2.],
+        [0., 1., 0.]]])[..., np.newaxis]).all())
+
+  def test_neighbours_3D_reflect(self):
+    _world = World3D(dim=(2,2,2), boundary=Boundary.reflect)
+    _world.set_states(np.array(range(8)).reshape((2,2,2)))
+    _world._boundary_effect()
+    # (2,2,2) is the 8th element of our state within the larger world
+    neighbours = _world.neighbourhood((2,2,2))
+    self.assertTrue((neighbours[1, 1, 1] == 7))
+    self.assertTrue((neighbours == np.array(
+      [[[0., 1., 1.],
+        [2., 3., 3.],
+        [2., 3., 3.]],
+
+       [[4., 5., 5.],
+        [6., 7., 7.],
+        [6., 7., 7.]],
+
+        [[4., 5., 5.],
+        [6., 7., 7.],
+        [6., 7., 7.]]])[..., np.newaxis]).all())
 
 
 if __name__ == '__main__':
