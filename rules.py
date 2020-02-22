@@ -1,6 +1,33 @@
 import numpy as np
 import unittest
 
+def GOL3D(neighbourhood, state_index=0):
+  #print(neighbourhood)
+  #import pdb; pdb.set_trace()
+  neighbourhood_state = neighbourhood[:, :, :, state_index] > 0.5
+  living = neighbourhood_state.sum()
+  centre = neighbourhood_state[
+      int(np.floor(neighbourhood_state.shape[0] / 2.)),
+      int(np.floor(neighbourhood_state.shape[1] / 2.)),
+      int(np.floor(neighbourhood_state.shape[2] / 2.))]
+  cell_state_change = np.zeros_like(neighbourhood[
+    int(np.floor(neighbourhood.shape[0] / 2.)),
+    int(np.floor(neighbourhood.shape[1] / 2.)),
+    int(np.floor(neighbourhood.shape[2] / 2.))])
+  if centre == 0.0:
+    # dead
+    if living == 5:
+      return cell_state_change + 1
+    else:
+      return cell_state_change
+  else:
+    # alive
+    living -= 1
+    if living == 2 or living == 3:
+      return cell_state_change
+    else:
+      return cell_state_change - 1
+
 def GOL2D(neighbourhood):
   #print(neighbourhood)
   #import pdb; pdb.set_trace()

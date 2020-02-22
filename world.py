@@ -8,6 +8,8 @@ class Boundary(IntEnum):
   wrap = 2
   live = 3
 
+boundary_type = [x.name for x in Boundary]
+
 class World():
   '''
   Cell state grids for 1D, 2D and 3D CAs.
@@ -29,6 +31,10 @@ class World():
     self._world = self._world_1
     self._world_next = self._world_2
     self._rules = []
+
+  @property
+  def dim(self):
+    return self._dim
 
   def set_states(self, states):
     if ((len(self._state_dim) - len(states.shape) == 1)
@@ -55,7 +61,7 @@ class World():
     self._boundary_effect()
     self._step()
     self._flip_worlds()
-    pass
+    return self.cells
 
   def _step(self):
     assert(False)
@@ -207,8 +213,10 @@ class World3D(World):
       for y in range(1, self._dim[1] + 1):
         for z in range(1, self._dim[2] + 1):
           for rule in self._rules:
-            self._world_next[x, y, x] += rule(self.neighbourhood((x, y, z)))
+            delta = rule(self.neighbourhood((x, y, z)))
+            self._world_next[x, y, z] += delta
     self._world_next = self._world_next.clip(0, 1)
+    print('w')
 
   def _boundary_effect(self):
     if self._boundary == Boundary.wrap:

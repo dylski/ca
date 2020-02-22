@@ -6,7 +6,6 @@ import rules
 from pygame import surfarray
 import world
 
-boundary_condition = [x.name for x in world.Boundary]
 
 if __name__ == '__main__':
   ap = argparse.ArgumentParser()
@@ -16,7 +15,7 @@ if __name__ == '__main__':
   ap.add_argument('-f', '--save_frames', action='store_true',
       help='Save frames to outout_v directory')
   ap.add_argument('-b', '--boundary', help='Boundary condition [{}]'.format(
-    boundary_condition), default=boundary_condition[0])
+    world.boundary_type), default=world.boundary_type[0])
   args = vars(ap.parse_args())
   num_cells = int(args.get('num_cells'))
   history = int(args.get('history'))
